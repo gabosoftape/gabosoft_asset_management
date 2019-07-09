@@ -27,49 +27,49 @@ import string
 class BtAsset(models.Model):   
     _name = "bt.asset"
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _description = "Asset" 
+    _description = "Activo" 
     
     @api.multi
     def _get_default_location(self):
         obj = self.env['bt.asset.location'].search([('default','=',True)])
         if not obj:
-            raise Warning(_("Please create asset location first"))
+            raise Warning(_("Por favor, cree primero la ubicación del activo"))
         loc = obj[0]
         return loc 
     
-    name = fields.Char(string='Name', required=True)
-    purchase_date = fields.Date(string='Purchase Date',track_visibility='always')
-    purchase_value = fields.Float(string='Purchase Value', track_visibility='always')
-    asset_code = fields.Char(string='Asset Code')
-    is_created = fields.Boolean('Created', copy=False)
-    current_loc_id = fields.Many2one('bt.asset.location', string="Current Location", default=_get_default_location, required=True)
-    model_name = fields.Char(string='Model Name')
+    name = fields.Char(string='Nombre', required=True)
+    purchase_date = fields.Date(string='Fecha de Compra',track_visibility='always')
+    purchase_value = fields.Float(string='Valor', track_visibility='always')
+    asset_code = fields.Char(string='Codigo de activo')
+    is_created = fields.Boolean('Creado', copy=False)
+    current_loc_id = fields.Many2one('bt.asset.location', string="Ubicación actual", default=_get_default_location, required=True)
+    model_name = fields.Char(string='Modelo')
     serial_no = fields.Char(string='Serial No', track_visibility='always')
-    manufacturer = fields.Char(string='Manufacturer')
-    warranty_start = fields.Date(string='Warranty Start')
-    warranty_end = fields.Date(string='Warranty End')
-    category_id = fields.Many2one('bt.asset.category', string='Category Id')
-    note = fields.Text(string='Internal Notes')
+    manufacturer = fields.Char(string='Fabricante')
+    warranty_start = fields.Date(string='Inicio garantia')
+    warranty_end = fields.Date(string='Fin garantia')
+    category_id = fields.Many2one('bt.asset.category', string='Categoria')
+    note = fields.Text(string='Notas Internas')
     state = fields.Selection([
             ('active', 'Active'),
-            ('scrapped', 'Scrapped')], string='State',track_visibility='onchange', default='active', copy=False)
-    image = fields.Binary("Image", attachment=True,
-        help="This field holds the image used as image for the asset, limited to 1024x1024px.")
+            ('scrapped', 'Scrapped')], string='Estado',track_visibility='onchange', default='active', copy=False)
+    image = fields.Binary("Imagen", attachment=True,
+        help="Este campo contiene la imagen utilizada como imagen para el activo, limitada a 1024x1024px.")
     image_medium = fields.Binary("Medium-sized image", attachment=True,
-        help="Medium-sized image of the asset. It is automatically "\
-             "resized as a 128x128px image, with aspect ratio preserved, "\
-             "only when the image exceeds one of those sizes. Use this field in form views or some kanban views.")
+        help="Imagen mediana del activo. Es automáticamente "\
+              "redimensionado como una imagen de 128x128px, con relación de aspecto conservada," \
+              "solo cuando la imagen excede uno de esos tamaños. Use este campo en las vistas de formulario o en algunas vistas kanban".)
     image_small = fields.Binary("Small-sized image", attachment=True,
-        help="Small-sized image of the asset. It is automatically "\
-             "resized as a 64x64px image, with aspect ratio preserved. "\
-             "Use this field anywhere a small image is required.")
+        help="Imagen de pequeño tamaño del activo. Es automáticamente "\
+              "redimensionado como una imagen de 64x64px, con la relación de aspecto conservada".
+              "Utilice este campo en cualquier lugar donde se requiera una imagen pequeña".)
     
     @api.model
     def create(self, vals):
         tools.image_resize_images(vals)
         vals.update({'is_created':True})
         lot = super(BtAsset, self).create(vals)
-        lot.message_post(body=_("Asset %s created with asset code %s")% (lot.name,lot.asset_code))
+        lot.message_post(body=_("Activo %s creado con el codigo %s .")% (lot.name,lot.asset_code))
         return lot      
     
     @api.multi
@@ -83,7 +83,7 @@ class BtAsset(models.Model):
         for asset in self:
             location_obj = self.env['bt.asset.location'].search([('default_scrap','=',True)])
             if not location_obj:
-                raise Warning(_("Please set scrap location first"))
+                raise Warning(_("Por favor, establezca la ubicación de chatarra primero"))
             move_vals = {
                 'from_loc_id' : asset.current_loc_id.id,
                 'asset_id' : asset.id,
@@ -102,7 +102,7 @@ class BtAssetLocation(models.Model):
     _description = "Asset Location" 
     
     name = fields.Char(string='Name', required=True)
-    asset_ids = fields.One2many('bt.asset','current_loc_id', string='Assets')
+    asset_ids = fields.One2many('bt.asset','current_loc_id', string='Activos')
     default = fields.Boolean('Default', copy=False)
     default_scrap = fields.Boolean('Scrap')
     
@@ -112,7 +112,7 @@ class BtAssetLocation(models.Model):
         obj = self.env['bt.asset.location'].search([('default','=',True)])
         asset_obj = self.env['bt.asset.location'].search([('default_scrap','=',True)])
         if len(obj) > 1 or len(asset_obj) > 1:
-            raise ValidationError(_("Default location have already set."))
+            raise ValidationError(_("La ubicación predeterminada ya se ha establecido."))
         return result
     
     @api.multi
@@ -121,14 +121,14 @@ class BtAssetLocation(models.Model):
         obj = self.env['bt.asset.location'].search([('default','=',True)])
         asset_obj = self.env['bt.asset.location'].search([('default_scrap','=',True)])
         if len(obj) > 1 or len(asset_obj) > 1:
-            raise ValidationError(_("Default location have already set."))
+            raise ValidationError(_("La ubicación predeterminada ya se ha establecido."))
         return res
     
 class BtAssetCategory(models.Model): 
     _name = "bt.asset.category"
     _description = "Asset Category"
     
-    name = fields.Char(string='Name', required=True)  
+    name = fields.Char(string='Nombre', required=True)  
     categ_no = fields.Char(string='Category No')
     
 # vim:expandtab:smartindent:tabstop=2:softtabstop=2:shiftwidth=2:  
