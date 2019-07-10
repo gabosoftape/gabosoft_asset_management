@@ -27,15 +27,15 @@ import copy
 
 class BtAssetMove(models.Model):
     _name = "bt.asset.move"
-    _description = "Asset Move" 
+    _description = "Movimiento de Activo" 
     
-    name = fields.Char(string='Name', default="New", copy=False)
-    from_loc_id = fields.Many2one('bt.asset.location', string='From Location', required=True)
-    asset_id = fields.Many2one('bt.asset', string='Asset', required=False, copy=False)
+    name = fields.Char(string='Nombre', default="New", copy=False)
+    from_loc_id = fields.Many2one('bt.asset.location', string='De Ubicacion', required=True)
+    asset_id = fields.Many2one('bt.asset', string='Activo', required=False, copy=False)
     to_loc_id = fields.Many2one('bt.asset.location', string='To Location', required=True)
     state = fields.Selection([
             ('draft', 'Draft'),
-            ('done', 'Done')], string='State',track_visibility='onchange', default='draft', copy=False)
+            ('done', 'Done')], string='Estado',track_visibility='onchange', default='draft', copy=False)
     
     @api.model
     def create(self, vals):
@@ -44,10 +44,10 @@ class BtAssetMove(models.Model):
         result = super(BtAssetMove, self).create(vals)
         if vals.get('from_loc_id', False) or vals.get('to_loc_id', False):
             if result.from_loc_id == result.to_loc_id:
-                raise ValidationError(_("From location and to location must be different."))
+                raise ValidationError(_("Origen y destino deben ser diferentes"))
         if vals.get('asset_id',False):
             if result.asset_id.current_loc_id != result.from_loc_id:
-                raise ValidationError(_("Current location and from location must be same while creating asset."))
+                raise ValidationError(_("La ubicación origen y destino debe ser la misma al crear un activo."))
         return result
     
     @api.multi
@@ -56,11 +56,11 @@ class BtAssetMove(models.Model):
         if vals.get('from_loc_id', False) or vals.get('to_loc_id', False):
             for move in self:
                 if move.from_loc_id == move.to_loc_id:
-                    raise ValidationError(_("From location and to location must be different."))
+                    raise ValidationError(_("Origen y destino deben ser diferentes"))
         if vals.get('asset_id',False):
             for asset_obj in self:
                 if asset_obj.asset_id.current_loc_id != asset_obj.from_loc_id:
-                    raise ValidationError(_("Current location and from location must be same while creating asset."))
+                    raise ValidationError(_("La ubicación origen y destino debe ser la misma al crear un activo."))
         return result
     
     @api.multi
